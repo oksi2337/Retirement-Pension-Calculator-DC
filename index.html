@@ -1,0 +1,804 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>퇴직연금 부담금 계산기</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+            background-color: #f0f2f5;
+            color: #1a202c;
+        }
+        .section-card {
+            background: #ffffff;
+            border: 1px solid #d1d9e6;
+            border-radius: 4px;
+        }
+        .section-header {
+            background-color: #f7f9fc;
+            border-bottom: 1px solid #d1d9e6;
+            padding: 10px 16px;
+        }
+        .section-number {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 20px;
+            height: 20px;
+            background-color: #1e3a5f;
+            color: white;
+            font-size: 11px;
+            font-weight: 700;
+            border-radius: 2px;
+            margin-right: 8px;
+            flex-shrink: 0;
+        }
+        .form-label {
+            display: block;
+            font-size: 12px;
+            font-weight: 600;
+            color: #4a5568;
+            margin-bottom: 4px;
+            letter-spacing: 0.02em;
+        }
+        .form-input {
+            width: 100%;
+            border: 1px solid #c8d0db;
+            border-radius: 3px;
+            padding: 7px 10px;
+            font-size: 13px;
+            color: #1a202c;
+            font-family: 'Noto Sans KR', sans-serif;
+            transition: border-color 0.15s, box-shadow 0.15s;
+            background-color: #fff;
+        }
+        .form-input:focus {
+            outline: none;
+            border-color: #1e3a5f;
+            box-shadow: 0 0 0 2px rgba(30, 58, 95, 0.12);
+        }
+        .form-input.text-right {
+            text-align: right;
+        }
+        .result-panel {
+            background-color: #1e3a5f;
+            border-radius: 4px;
+            color: white;
+        }
+        .result-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.08);
+        }
+        .result-row:last-child {
+            border-bottom: none;
+        }
+        .result-label {
+            font-size: 12px;
+            color: #94a3b8;
+            font-weight: 400;
+        }
+        .result-value {
+            font-size: 13px;
+            color: #e2e8f0;
+            font-weight: 500;
+        }
+        .btn-primary {
+            background-color: #1e3a5f;
+            color: white;
+            border: none;
+            border-radius: 3px;
+            padding: 9px 24px;
+            font-size: 13px;
+            font-weight: 600;
+            font-family: 'Noto Sans KR', sans-serif;
+            cursor: pointer;
+            transition: background-color 0.15s;
+            letter-spacing: 0.02em;
+        }
+        .btn-primary:hover { background-color: #152e4d; }
+        .btn-secondary {
+            background-color: #fff;
+            color: #4a5568;
+            border: 1px solid #c8d0db;
+            border-radius: 3px;
+            padding: 5px 12px;
+            font-size: 12px;
+            font-weight: 600;
+            font-family: 'Noto Sans KR', sans-serif;
+            cursor: pointer;
+            transition: background-color 0.15s, color 0.15s;
+        }
+        .btn-secondary:hover { background-color: #f7f9fc; color: #1a202c; }
+        .btn-danger {
+            background-color: #fff;
+            color: #c53030;
+            border: 1px solid #feb2b2;
+            border-radius: 3px;
+            padding: 5px 12px;
+            font-size: 12px;
+            font-weight: 600;
+            font-family: 'Noto Sans KR', sans-serif;
+            cursor: pointer;
+            transition: background-color 0.15s;
+        }
+        .btn-danger:hover { background-color: #fff5f5; }
+        .summary-panel {
+            background: #fff;
+            border: 1px solid #d1d9e6;
+            border-radius: 4px;
+        }
+        .summary-header {
+            background-color: #1e3a5f;
+            color: white;
+            padding: 10px 16px;
+            border-radius: 4px 4px 0 0;
+        }
+        table.formal-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+        table.formal-table thead tr {
+            background-color: #f7f9fc;
+        }
+        table.formal-table th {
+            padding: 9px 12px;
+            font-size: 11px;
+            font-weight: 700;
+            color: #4a5568;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            border-bottom: 2px solid #d1d9e6;
+        }
+        table.formal-table td {
+            padding: 9px 12px;
+            border-bottom: 1px solid #edf2f7;
+            color: #2d3748;
+        }
+        table.formal-table tbody tr:hover {
+            background-color: #f7f9fc;
+        }
+        table.formal-table tfoot td {
+            padding: 10px 12px;
+            border-top: 2px solid #d1d9e6;
+            font-weight: 700;
+        }
+        .toggle-label-btn {
+            font-size: 11px;
+            font-weight: 600;
+            padding: 3px 8px;
+            border-radius: 2px;
+            cursor: pointer;
+            border: none;
+            font-family: 'Noto Sans KR', sans-serif;
+            transition: background 0.15s, color 0.15s;
+        }
+        .toggle-label-btn.active {
+            background-color: #1e3a5f;
+            color: white;
+        }
+        .toggle-label-btn.inactive {
+            background-color: #edf2f7;
+            color: #718096;
+        }
+        .toggle-label-btn.inactive:hover {
+            background-color: #e2e8f0;
+            color: #4a5568;
+        }
+        .employee-divider {
+            border: none;
+            border-top: 2px solid #d1d9e6;
+            margin: 32px 0;
+        }
+        .employee-index-badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 28px;
+            height: 28px;
+            background-color: #1e3a5f;
+            color: white;
+            font-size: 13px;
+            font-weight: 700;
+            border-radius: 2px;
+            margin-right: 10px;
+        }
+        .extra-pay-table-header {
+            display: grid;
+            grid-template-columns: 1fr 1fr 120px 40px;
+            gap: 8px;
+            padding: 7px 12px;
+            background-color: #f7f9fc;
+            border-bottom: 2px solid #d1d9e6;
+            font-size: 11px;
+            font-weight: 700;
+            color: #4a5568;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        .extra-pay-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr 120px 40px;
+            gap: 8px;
+            padding: 6px 12px;
+            align-items: center;
+            border-bottom: 1px solid #edf2f7;
+            transition: background 0.1s;
+        }
+        .extra-pay-row:hover { background-color: #f7f9fc; }
+        .extra-pay-row:last-child { border-bottom: none; }
+        .app-header {
+            background-color: #1e3a5f;
+            color: white;
+            padding: 16px 24px;
+            border-bottom: 3px solid #f59e0b;
+        }
+        input[type="checkbox"].formal-check {
+            width: 15px;
+            height: 15px;
+            border: 1px solid #c8d0db;
+            border-radius: 2px;
+            accent-color: #1e3a5f;
+            cursor: pointer;
+        }
+        .info-note {
+            font-size: 11px;
+            color: #718096;
+            margin-top: 6px;
+            line-height: 1.5;
+        }
+        .result-amount-main {
+            font-size: 22px;
+            font-weight: 700;
+            color: #ffffff;
+            text-align: right;
+            letter-spacing: -0.02em;
+        }
+        .result-amount-sub {
+            font-size: 18px;
+            font-weight: 600;
+            text-align: right;
+            letter-spacing: -0.02em;
+        }
+        .result-amount-total {
+            font-size: 26px;
+            font-weight: 800;
+            color: #fbbf24;
+            text-align: right;
+            letter-spacing: -0.03em;
+        }
+        .result-box {
+            background-color: rgba(255,255,255,0.06);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 3px;
+            padding: 12px 14px;
+            margin-bottom: 8px;
+        }
+        .calc-note-box {
+            background-color: rgba(0,0,0,0.2);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 3px;
+            padding: 12px 14px;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- 앱 헤더 -->
+    <div class="app-header">
+        <div class="max-w-7xl mx-auto flex items-center justify-between">
+            <div>
+                <h1 class="text-xl font-bold tracking-tight">퇴직연금 부담금 계산기</h1>
+                <p class="text-xs text-blue-200 mt-0.5">개인별 과세소득액 내역서 기반 산출</p>
+            </div>
+            <div class="text-xs text-blue-300 text-right hidden md:block">
+                <div>근로자퇴직급여보장법 제8조 기준</div>
+                <div class="mt-0.5">확정급여형(DB) / 확정기여형(DC)</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="max-w-7xl mx-auto px-4 py-6">
+
+        <!-- 전체 요약 패널 -->
+        <div class="summary-panel mb-6 sticky top-0 z-10" style="box-shadow: 0 2px 8px rgba(0,0,0,0.08);">
+            <div class="summary-header flex items-center justify-between">
+                <span class="text-sm font-bold tracking-wide">퇴직급여 합계 요약</span>
+                <span class="text-xs text-blue-200">직원별 퇴직급여 산출 결과</span>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="formal-table">
+                    <thead>
+                        <tr>
+                            <th class="text-left w-12">No.</th>
+                            <th class="text-left">성명</th>
+                            <th class="text-left">교번</th>
+                            <th class="text-right">퇴직급여 (원)</th>
+                        </tr>
+                    </thead>
+                    <tbody id="summaryTableBody">
+                        <tr>
+                            <td colspan="4" class="py-4 text-center text-gray-400 text-xs">입력된 정보가 없습니다.</td>
+                        </tr>
+                    </tbody>
+                    <tfoot>
+                        <tr>
+                            <td colspan="3" class="text-sm text-gray-700">합계</td>
+                            <td class="text-right text-lg font-black" style="color:#1e3a5f;" id="summaryTotal">0</td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+        </div>
+
+        <!-- 직원 폼 목록 -->
+        <div id="personsContainer"></div>
+
+        <!-- 직원 추가 버튼 -->
+        <div class="mt-8 flex items-center gap-4">
+            <button onclick="addPerson()" class="btn-primary">+ 직원 추가</button>
+            <span class="text-xs text-gray-400">현재 <span id="personCount">0</span>명 입력됨</span>
+        </div>
+
+    </div>
+
+    <script>
+        let persons = [];
+
+        function createPerson() {
+            return {
+                empName: '',
+                empId: '',
+                startDate: '',
+                endDate: '',
+                totalBase: 0,
+                firstBase: 0,
+                lastBase: 0,
+                extraPays: [],
+                prevPaid: 0,
+                severance: 0,
+                totalWage: 0
+            };
+        }
+
+        function parseNum(str) {
+            return parseInt((str || '').replace(/,/g, '')) || 0;
+        }
+
+        function formatNumber(input) {
+            let value = input.value.replace(/[^0-9]/g, '');
+            input.value = value ? Number(value).toLocaleString() : '';
+        }
+
+        function getDaysInMonth(year, month) {
+            return new Date(year, month, 0).getDate();
+        }
+
+        function syncField(idx, field, value) {
+            persons[idx][field] = value;
+        }
+
+        function togglePrevPaid(idx) {
+            const section = document.getElementById(`prevPaidSection-${idx}`);
+            const btn = document.getElementById(`prevPaidToggle-${idx}`);
+            const isHidden = section.classList.contains('hidden');
+            section.classList.toggle('hidden');
+            btn.textContent = isHidden ? '숨기기' : '입력';
+            if (!isHidden) {
+                syncField(idx, 'prevPaid', 0);
+                document.getElementById(`prevPaid-${idx}`).value = '';
+                calculatePerson(idx);
+            }
+        }
+
+        function setEndDateLabel(idx, label) {
+            const btnA = document.getElementById(`endLabelBtnA-${idx}`);
+            const btnB = document.getElementById(`endLabelBtnB-${idx}`);
+            if (label === '퇴직일') {
+                btnA.className = 'toggle-label-btn active';
+                btnB.className = 'toggle-label-btn inactive';
+            } else {
+                btnA.className = 'toggle-label-btn inactive';
+                btnB.className = 'toggle-label-btn active';
+            }
+        }
+
+        function addExtraPay(idx) {
+            persons[idx].extraPays.push({ label: '', amount: 0, excluded: false });
+            renderExtraPays(idx);
+            calculatePerson(idx);
+        }
+
+        function removeExtraPay(idx, ei) {
+            persons[idx].extraPays.splice(ei, 1);
+            renderExtraPays(idx);
+            calculatePerson(idx);
+        }
+
+        function updateExtra(idx, ei, key, value) {
+            persons[idx].extraPays[ei][key] = key === 'amount'
+                ? (Number(value.replace(/[^0-9]/g, '')) || 0)
+                : value;
+            calculatePerson(idx);
+        }
+
+        function renderExtraPays(idx) {
+            const container = document.getElementById(`extraPayContainer-${idx}`);
+            if (!container) return;
+            if (persons[idx].extraPays.length === 0) {
+                container.innerHTML = `<div class="py-4 text-center text-xs text-gray-400">등록된 항목이 없습니다. [+ 항목 추가] 버튼을 클릭하세요.</div>`;
+                return;
+            }
+            container.innerHTML = persons[idx].extraPays.map((item, ei) => `
+                <div class="extra-pay-row">
+                    <div>
+                        <input type="text" value="${item.label}" onchange="updateExtra(${idx}, ${ei}, 'label', this.value)"
+                            class="form-input" placeholder="수당명 입력" style="font-size:12px; padding:5px 8px;">
+                    </div>
+                    <div>
+                        <input type="text" value="${Number(item.amount).toLocaleString()}"
+                            oninput="formatNumber(this); updateExtra(${idx}, ${ei}, 'amount', this.value)"
+                            class="form-input text-right" placeholder="0" style="font-size:12px; padding:5px 8px;">
+                    </div>
+                    <div class="flex items-center justify-center gap-2">
+                        <input type="checkbox" ${item.excluded ? 'checked' : ''}
+                            onchange="updateExtra(${idx}, ${ei}, 'excluded', this.checked)"
+                            class="formal-check">
+                        <span class="text-xs text-gray-500">제외</span>
+                    </div>
+                    <div class="flex items-center justify-center">
+                        <button onclick="removeExtraPay(${idx}, ${ei})"
+                            style="background:none;border:none;cursor:pointer;color:#c53030;font-size:16px;line-height:1;padding:2px 6px;"
+                            title="항목 삭제">×</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function getPersonHTML(idx) {
+            const p = persons[idx];
+            const canDelete = persons.length > 1;
+            return `
+            <div id="person-section-${idx}">
+                ${idx > 0 ? '<hr class="employee-divider">' : ''}
+
+                <!-- 직원 섹션 헤더 -->
+                <div class="flex justify-between items-center mb-4">
+                    <div class="flex items-center">
+                        <span class="employee-index-badge">${idx + 1}</span>
+                        <div>
+                            <span class="text-base font-bold text-gray-800">직원 ${idx + 1}</span>
+                            <span class="text-xs text-gray-400 ml-2">부담금 산출 정보 입력</span>
+                        </div>
+                    </div>
+                    ${canDelete ? `<button onclick="removePerson(${idx})" class="btn-danger">삭제</button>` : ''}
+                </div>
+
+                <div class="grid grid-cols-1 xl:grid-cols-12 gap-5">
+
+                    <!-- 좌측: 입력 영역 -->
+                    <div class="xl:col-span-7 space-y-4">
+
+                        <!-- 1. 기본 정보 -->
+                        <div class="section-card">
+                            <div class="section-header flex items-center">
+                                <span class="section-number">1</span>
+                                <span class="text-sm font-bold text-gray-700">기본 정보 및 기산일</span>
+                            </div>
+                            <div class="p-4">
+                                <div class="grid grid-cols-2 gap-4 mb-4">
+                                    <div>
+                                        <label class="form-label">성명</label>
+                                        <input type="text" id="empName-${idx}" value="${p.empName}"
+                                            oninput="syncField(${idx}, 'empName', this.value); calculatePerson(${idx})"
+                                            class="form-input" placeholder="홍길동">
+                                    </div>
+                                    <div>
+                                        <label class="form-label">교번</label>
+                                        <input type="text" id="empId-${idx}" value="${p.empId}"
+                                            oninput="syncField(${idx}, 'empId', this.value); calculatePerson(${idx})"
+                                            class="form-input" placeholder="예: 2023-001">
+                                    </div>
+                                </div>
+                                <div class="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="form-label">입사일</label>
+                                        <input type="date" id="startDate-${idx}" value="${p.startDate}"
+                                            onchange="syncField(${idx}, 'startDate', this.value); calculatePerson(${idx})"
+                                            class="form-input">
+                                    </div>
+                                    <div>
+                                        <div class="flex items-center gap-1 mb-1">
+                                            <button type="button" onclick="setEndDateLabel(${idx}, '퇴직일')" id="endLabelBtnA-${idx}" class="toggle-label-btn active">퇴직일</button>
+                                            <span class="text-gray-300 text-xs">/</span>
+                                            <button type="button" onclick="setEndDateLabel(${idx}, '기산일자')" id="endLabelBtnB-${idx}" class="toggle-label-btn inactive">기산일자</button>
+                                        </div>
+                                        <input type="date" id="endDate-${idx}" value="${p.endDate}"
+                                            onchange="syncField(${idx}, 'endDate', this.value); calculatePerson(${idx})"
+                                            class="form-input">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 2. 급여지급액 -->
+                        <div class="section-card">
+                            <div class="section-header flex items-center">
+                                <span class="section-number">2</span>
+                                <span class="text-sm font-bold text-gray-700">급여지급액</span>
+                            </div>
+                            <div class="p-4">
+                                <p class="info-note mb-4">명세서에 표기된 1년치 기본급여 총계와, 일할 계산이 필요한 첫 달 / 마지막 달의 지급액을 입력합니다. (과세별도 수당 제외)</p>
+                                <div class="mb-4">
+                                    <label class="form-label">1년치 급여지급액 총합계 <span class="font-normal text-gray-400">(원)</span></label>
+                                    <div class="relative">
+                                        <input type="text" id="totalBase-${idx}" value="${p.totalBase ? Number(p.totalBase).toLocaleString() : ''}"
+                                            oninput="formatNumber(this); syncField(${idx}, 'totalBase', parseNum(this.value)); calculatePerson(${idx})"
+                                            class="form-input text-right" placeholder="0"
+                                            style="font-size:16px; font-weight:700; padding-right:36px;">
+                                        <span class="absolute right-3 top-2.5 text-gray-400 text-sm font-medium">원</span>
+                                    </div>
+                                </div>
+                                <div class="grid grid-cols-2 gap-4" style="border-top:1px dashed #e2e8f0; padding-top:14px;">
+                                    <div>
+                                        <label class="form-label">첫 달 지급액 <span class="font-normal text-gray-400">(일할 안분 대상)</span></label>
+                                        <div class="relative">
+                                            <input type="text" id="firstBase-${idx}" value="${p.firstBase ? Number(p.firstBase).toLocaleString() : ''}"
+                                                oninput="formatNumber(this); syncField(${idx}, 'firstBase', parseNum(this.value)); calculatePerson(${idx})"
+                                                class="form-input text-right" placeholder="0" style="padding-right:28px;">
+                                            <span class="absolute right-3 top-2 text-gray-400 text-xs">원</span>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <label class="form-label">마지막 달 지급액 <span class="font-normal text-gray-400">(일할 안분 대상)</span></label>
+                                        <div class="relative">
+                                            <input type="text" id="lastBase-${idx}" value="${p.lastBase ? Number(p.lastBase).toLocaleString() : ''}"
+                                                oninput="formatNumber(this); syncField(${idx}, 'lastBase', parseNum(this.value)); calculatePerson(${idx})"
+                                                class="form-input text-right" placeholder="0" style="padding-right:28px;">
+                                            <span class="absolute right-3 top-2 text-gray-400 text-xs">원</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 3. 과세별도기지급액 -->
+                        <div class="section-card">
+                            <div class="section-header flex items-center justify-between">
+                                <div class="flex items-center">
+                                    <span class="section-number">3</span>
+                                    <span class="text-sm font-bold text-gray-700">과세별도기지급액 관리</span>
+                                </div>
+                                <button onclick="addExtraPay(${idx})" class="btn-secondary">+ 항목 추가</button>
+                            </div>
+                            <div>
+                                <div class="extra-pay-table-header">
+                                    <div>수당명 / 메모</div>
+                                    <div class="text-right">금액 (원)</div>
+                                    <div class="text-center">일회성 제외</div>
+                                    <div class="text-center">삭제</div>
+                                </div>
+                                <div id="extraPayContainer-${idx}">
+                                    <div class="py-4 text-center text-xs text-gray-400">등록된 항목이 없습니다. [+ 항목 추가] 버튼을 클릭하세요.</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 4. 기지급 부담금 -->
+                        <div class="section-card">
+                            <div class="section-header flex items-center justify-between">
+                                <div class="flex items-center">
+                                    <span class="section-number">4</span>
+                                    <span class="text-sm font-bold text-gray-700">기 지급 부담금 차감</span>
+                                </div>
+                                <button type="button" onclick="togglePrevPaid(${idx})" id="prevPaidToggle-${idx}" class="btn-secondary">입력</button>
+                            </div>
+                            <div id="prevPaidSection-${idx}" class="hidden p-4">
+                                <p class="info-note mb-3">기존에 이미 지급된 퇴직연금 부담금이 있는 경우 입력합니다. 산출된 퇴직급여에서 차감됩니다.</p>
+                                <div class="relative">
+                                    <input type="text" id="prevPaid-${idx}" value="${p.prevPaid ? Number(p.prevPaid).toLocaleString() : ''}"
+                                        oninput="formatNumber(this); syncField(${idx}, 'prevPaid', parseNum(this.value)); calculatePerson(${idx})"
+                                        placeholder="0"
+                                        class="form-input text-right" style="padding-right:28px;">
+                                    <span class="absolute right-3 top-2 text-gray-400 text-xs">원</span>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <!-- 우측: 결과 패널 -->
+                    <div class="xl:col-span-5">
+                        <div class="result-panel p-5" style="position: sticky; top: 160px;">
+                            <div style="border-bottom:1px solid rgba(255,255,255,0.12); padding-bottom:10px; margin-bottom:14px;">
+                                <span class="text-xs font-bold tracking-widest" style="color:#94a3b8; text-transform:uppercase;">계산 결과</span>
+                            </div>
+
+                            <!-- 기본 정보 표시 -->
+                            <div style="background:rgba(255,255,255,0.05); border-radius:3px; padding:10px 12px; margin-bottom:12px;">
+                                <div class="result-row" style="padding:6px 0;">
+                                    <span class="result-label">성명</span>
+                                    <span class="result-value" id="resName-${idx}">-</span>
+                                </div>
+                                <div class="result-row" style="padding:6px 0; border-bottom:none;">
+                                    <span class="result-label">교번</span>
+                                    <span class="result-value" id="resId-${idx}">-</span>
+                                </div>
+                            </div>
+
+                            <!-- 임금총액 -->
+                            <div class="result-box">
+                                <div class="result-label mb-1">산출된 임금총액 (A)</div>
+                                <div class="result-amount-main" id="resTotalWage-${idx}">0</div>
+                                <div style="text-align:right; font-size:10px; color:#64748b; margin-top:2px;">원</div>
+                            </div>
+
+                            <!-- 퇴직급여 -->
+                            <div class="result-box" style="border-color:rgba(251,191,36,0.3); background:rgba(251,191,36,0.08);">
+                                <div class="result-label mb-1">예상 퇴직급여 (A ÷ 12)</div>
+                                <div class="result-amount-total" id="resSeverance-${idx}">0</div>
+                                <div style="text-align:right; font-size:10px; color:#92400e; margin-top:2px;">원</div>
+                            </div>
+
+                            <!-- 기지급 차감 섹션 -->
+                            <div id="resPrevPaidRow-${idx}" class="hidden">
+                                <div class="result-box" style="background:rgba(239,68,68,0.08); border-color:rgba(239,68,68,0.2);">
+                                    <div class="flex justify-between items-center">
+                                        <span class="result-label">기 지급 부담금 차감</span>
+                                        <span style="font-size:13px; font-weight:600; color:#fca5a5;" id="resPrevPaid-${idx}">-0원</span>
+                                    </div>
+                                </div>
+                                <div class="result-box" style="border-color:rgba(52,211,153,0.4); background:rgba(52,211,153,0.08); margin-top:4px;">
+                                    <div class="result-label mb-1">최종 퇴직급여 (차감 후)</div>
+                                    <div class="result-amount-sub" style="color:#6ee7b7;" id="resNetSeverance-${idx}">0</div>
+                                    <div style="text-align:right; font-size:10px; color:#064e3b; margin-top:2px;">원</div>
+                                </div>
+                            </div>
+
+                            <!-- 계산 방법 안내 -->
+                            <div class="calc-note-box mt-2">
+                                <div class="result-label mb-2" style="font-weight:700;">산출 방법</div>
+                                <div style="font-size:11px; color:#94a3b8; line-height:1.7;" id="resDescription-${idx}"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+            `;
+        }
+
+        function renderAllPersons() {
+            const container = document.getElementById('personsContainer');
+            container.innerHTML = persons.map((_, i) => getPersonHTML(i)).join('');
+            persons.forEach((_, i) => renderExtraPays(i));
+            document.getElementById('personCount').textContent = persons.length;
+        }
+
+        function addPerson() {
+            persons.push(createPerson());
+            renderAllPersons();
+            calculateAll();
+            const newSection = document.getElementById(`person-section-${persons.length - 1}`);
+            if (newSection) newSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+
+        function removePerson(idx) {
+            if (persons.length <= 1) return;
+            persons.splice(idx, 1);
+            renderAllPersons();
+            calculateAll();
+        }
+
+        function calculatePerson(idx) {
+            const p = persons[idx];
+            const el = (id) => document.getElementById(id);
+
+            el(`resName-${idx}`).innerText = p.empName || '-';
+            el(`resId-${idx}`).innerText = p.empId || '-';
+
+            const middleSum = p.totalBase - p.firstBase - p.lastBase;
+            let proratedFirst = 0, proratedLast = 0;
+            let startTotal = 0, startWorked = 0, endTotal = 0, endWorked = 0;
+
+            if (p.startDate && p.endDate) {
+                const startD = new Date(p.startDate);
+                startTotal = getDaysInMonth(startD.getFullYear(), startD.getMonth() + 1);
+                startWorked = startTotal - startD.getDate() + 1;
+                proratedFirst = (p.firstBase / startTotal) * startWorked;
+
+                const endD = new Date(p.endDate);
+                endTotal = getDaysInMonth(endD.getFullYear(), endD.getMonth() + 1);
+                endWorked = endD.getDate();
+                proratedLast = (p.lastBase / endTotal) * endWorked;
+            }
+
+            let includedExtra = 0, excludedCount = 0;
+            p.extraPays.forEach(item => {
+                if (item.excluded) excludedCount++;
+                else includedExtra += item.amount;
+            });
+
+            const prevPaid = p.prevPaid || 0;
+            const deductionNote = prevPaid > 0
+                ? `<div style="color:#fca5a5;">· 기 지급 부담금 차감 적용</div>` : '';
+
+            const explanation = (p.startDate && p.endDate)
+                ? `<div>· 중간 기간 급여: 전액 반영</div>
+                   <div>· 첫 달: ${startTotal}일 중 <b style="color:#e2e8f0;">${startWorked}일</b> 일할 계산</div>
+                   <div>· 마지막 달: ${endTotal}일 중 <b style="color:#e2e8f0;">${endWorked}일</b> 일할 계산</div>
+                   <div>· 과세별도: 일회성 <b style="color:#e2e8f0;">${excludedCount}건</b> 제외 후 합산</div>
+                   <div>· 임금총액 ÷ 12 = 예상 퇴직급여</div>
+                   ${deductionNote}`
+                : `<div>· 급여지급액 총합계 기반 산출</div>
+                   <div>· 과세별도: 일회성 <b style="color:#e2e8f0;">${excludedCount}건</b> 제외 후 합산</div>
+                   <div>· 임금총액 ÷ 12 = 예상 퇴직급여</div>
+                   ${deductionNote}`;
+
+            const finalWage = proratedFirst + middleSum + proratedLast + includedExtra;
+            p.totalWage = Math.round(finalWage);
+            const grossSeverance = Math.round(finalWage / 12);
+            const netSeverance = grossSeverance - prevPaid;
+            p.severance = netSeverance;
+
+            el(`resTotalWage-${idx}`).innerText = p.totalWage.toLocaleString();
+            el(`resSeverance-${idx}`).innerText = grossSeverance.toLocaleString();
+            el(`resDescription-${idx}`).innerHTML = explanation;
+
+            const prevPaidRow = el(`resPrevPaidRow-${idx}`);
+            if (prevPaid > 0) {
+                prevPaidRow.classList.remove('hidden');
+                el(`resPrevPaid-${idx}`).innerText = '-' + prevPaid.toLocaleString() + '원';
+                el(`resNetSeverance-${idx}`).innerText = netSeverance.toLocaleString();
+            } else {
+                prevPaidRow.classList.add('hidden');
+            }
+
+            renderSummary();
+        }
+
+        function calculateAll() {
+            persons.forEach((_, i) => calculatePerson(i));
+        }
+
+        function renderSummary() {
+            const tbody = document.getElementById('summaryTableBody');
+            let total = 0;
+
+            if (persons.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="4" class="py-4 text-center text-gray-400 text-xs">입력된 정보가 없습니다.</td></tr>`;
+                document.getElementById('summaryTotal').innerText = '0';
+                return;
+            }
+
+            tbody.innerHTML = persons.map((p, i) => {
+                total += p.severance || 0;
+                const nameCell = p.empName
+                    ? `<span class="font-semibold">${p.empName}</span>`
+                    : `<span class="text-gray-300 text-xs">미입력</span>`;
+                const idCell = p.empId || `<span class="text-gray-300">-</span>`;
+                return `
+                <tr>
+                    <td class="text-gray-400 text-xs">${i + 1}</td>
+                    <td>${nameCell}</td>
+                    <td class="text-gray-500">${idCell}</td>
+                    <td class="text-right font-bold" style="color:#1e3a5f;">${(p.severance || 0).toLocaleString()}</td>
+                </tr>`;
+            }).join('');
+
+            document.getElementById('summaryTotal').innerText = total.toLocaleString();
+        }
+
+        // 초기화
+        persons.push(createPerson());
+        renderAllPersons();
+        calculateAll();
+    </script>
+</body>
+</html>
