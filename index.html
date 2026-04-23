@@ -75,8 +75,12 @@
                 startDate: '',
                 endDate: '',
                 totalBase: 0,
+                firstMode: 'prorated',
                 firstBase: 0,
+                firstDeduction: 0,
+                lastMode: 'prorated',
                 lastBase: 0,
+                lastDeduction: 0,
                 extraPays: [],
                 prevPaid: 0,
                 severance: 0,
@@ -124,6 +128,28 @@
                 btnA.className = 'text-xs font-semibold px-2 py-0.5 rounded text-gray-400 hover:text-gray-600 hover:bg-gray-100';
                 btnB.className = 'text-xs font-semibold px-2 py-0.5 rounded bg-blue-100 text-blue-700';
             }
+        }
+
+        function setFirstMode(idx, mode) {
+            persons[idx].firstMode = mode;
+            const isProrated = mode !== 'deduction';
+            document.getElementById(`firstBaseField-${idx}`).classList.toggle('hidden', !isProrated);
+            document.getElementById(`firstDeductionField-${idx}`).classList.toggle('hidden', isProrated);
+            document.getElementById(`firstModeProrated-${idx}`).className = `text-xs font-semibold px-2 py-0.5 rounded ${isProrated ? 'bg-blue-100 text-blue-700' : 'text-gray-400 hover:text-gray-600 hover:bg-gray-100'}`;
+            document.getElementById(`firstModeDeduction-${idx}`).className = `text-xs font-semibold px-2 py-0.5 rounded ${!isProrated ? 'bg-blue-100 text-blue-700' : 'text-gray-400 hover:text-gray-600 hover:bg-gray-100'}`;
+            document.getElementById(`firstModeHint-${idx}`).textContent = isProrated ? '월 급여 전체 → 일할 계산' : '총합계에서 차감할 금액';
+            calculatePerson(idx);
+        }
+
+        function setLastMode(idx, mode) {
+            persons[idx].lastMode = mode;
+            const isProrated = mode !== 'deduction';
+            document.getElementById(`lastBaseField-${idx}`).classList.toggle('hidden', !isProrated);
+            document.getElementById(`lastDeductionField-${idx}`).classList.toggle('hidden', isProrated);
+            document.getElementById(`lastModeProrated-${idx}`).className = `text-xs font-semibold px-2 py-0.5 rounded ${isProrated ? 'bg-blue-100 text-blue-700' : 'text-gray-400 hover:text-gray-600 hover:bg-gray-100'}`;
+            document.getElementById(`lastModeDeduction-${idx}`).className = `text-xs font-semibold px-2 py-0.5 rounded ${!isProrated ? 'bg-blue-100 text-blue-700' : 'text-gray-400 hover:text-gray-600 hover:bg-gray-100'}`;
+            document.getElementById(`lastModeHint-${idx}`).textContent = isProrated ? '월 급여 전체 → 일할 계산' : '총합계에서 차감할 금액';
+            calculatePerson(idx);
         }
 
         function addExtraPay(idx) {
@@ -247,7 +273,7 @@
                                 <span class="w-6 h-6 rounded bg-blue-100 text-blue-600 flex items-center justify-center mr-2 text-xs">2</span>
                                 급여지급액
                             </h3>
-                            <p class="text-xs text-gray-500 mb-5">명세서에 표기된 1년치 기본급여 총계와, 일할 계산이 필요한 첫 달 / 마지막 달의 지급액을 입력합니다. (과세별도 수당 제외)</p>
+                            <p class="text-xs text-gray-500 mb-5">명세서에 표기된 1년치 기본급여 총계와, 첫 달 / 마지막 달 지급액을 입력합니다. 각 달마다 <b>일할 계산</b>(월 급여 자동 안분) 또는 <b>차감액 입력</b>(총합계에서 직접 차감) 방식을 선택할 수 있습니다. (과세별도 수당 제외)</p>
                             <div class="space-y-4">
                                 <div>
                                     <label class="block text-sm font-bold text-gray-800 mb-1">1년치 급여지급액 총합계
@@ -262,26 +288,48 @@
                                 </div>
                                 <div class="grid grid-cols-2 gap-4 pt-2">
                                     <div>
-                                        <label class="block text-xs font-semibold text-gray-600 mb-1">첫 달 지급액
-                                            <span class="text-gray-400 font-normal">(일할 안분 대상)</span>
-                                        </label>
-                                        <div class="relative">
+                                        <div class="flex flex-wrap items-center gap-1 mb-1.5">
+                                            <span class="text-xs font-semibold text-gray-700 mr-0.5">첫 달 지급액</span>
+                                            <button type="button" onclick="setFirstMode(${idx}, 'prorated')" id="firstModeProrated-${idx}"
+                                                class="text-xs font-semibold px-2 py-0.5 rounded ${(p.firstMode || 'prorated') !== 'deduction' ? 'bg-blue-100 text-blue-700' : 'text-gray-400 hover:text-gray-600 hover:bg-gray-100'}">일할 계산</button>
+                                            <button type="button" onclick="setFirstMode(${idx}, 'deduction')" id="firstModeDeduction-${idx}"
+                                                class="text-xs font-semibold px-2 py-0.5 rounded ${(p.firstMode || 'prorated') === 'deduction' ? 'bg-blue-100 text-blue-700' : 'text-gray-400 hover:text-gray-600 hover:bg-gray-100'}">차감액 입력</button>
+                                        </div>
+                                        <div class="relative ${(p.firstMode || 'prorated') !== 'deduction' ? '' : 'hidden'}" id="firstBaseField-${idx}">
                                             <input type="text" id="firstBase-${idx}" value="${p.firstBase ? Number(p.firstBase).toLocaleString() : ''}"
                                                 oninput="formatNumber(this); syncField(${idx}, 'firstBase', parseNum(this.value)); calculatePerson(${idx})"
                                                 class="w-full border border-gray-300 rounded-lg px-3 py-2 text-right focus:ring-2 focus:ring-blue-500 focus:outline-none pr-8" placeholder="0">
                                             <span class="absolute right-3 top-2.5 text-gray-500 text-sm">원</span>
                                         </div>
+                                        <div class="relative ${(p.firstMode || 'prorated') === 'deduction' ? '' : 'hidden'}" id="firstDeductionField-${idx}">
+                                            <input type="text" id="firstDeduction-${idx}" value="${p.firstDeduction ? Number(p.firstDeduction).toLocaleString() : ''}"
+                                                oninput="formatNumber(this); syncField(${idx}, 'firstDeduction', parseNum(this.value)); calculatePerson(${idx})"
+                                                class="w-full border border-gray-300 rounded-lg px-3 py-2 text-right focus:ring-2 focus:ring-blue-500 focus:outline-none pr-8" placeholder="0">
+                                            <span class="absolute right-3 top-2.5 text-gray-500 text-sm">원</span>
+                                        </div>
+                                        <p class="text-xs text-gray-400 mt-1" id="firstModeHint-${idx}">${(p.firstMode || 'prorated') !== 'deduction' ? '월 급여 전체 → 일할 계산' : '총합계에서 차감할 금액'}</p>
                                     </div>
                                     <div>
-                                        <label class="block text-xs font-semibold text-gray-600 mb-1">마지막 달 지급액
-                                            <span class="text-gray-400 font-normal">(일할 안분 대상)</span>
-                                        </label>
-                                        <div class="relative">
+                                        <div class="flex flex-wrap items-center gap-1 mb-1.5">
+                                            <span class="text-xs font-semibold text-gray-700 mr-0.5">마지막 달 지급액</span>
+                                            <button type="button" onclick="setLastMode(${idx}, 'prorated')" id="lastModeProrated-${idx}"
+                                                class="text-xs font-semibold px-2 py-0.5 rounded ${(p.lastMode || 'prorated') !== 'deduction' ? 'bg-blue-100 text-blue-700' : 'text-gray-400 hover:text-gray-600 hover:bg-gray-100'}">일할 계산</button>
+                                            <button type="button" onclick="setLastMode(${idx}, 'deduction')" id="lastModeDeduction-${idx}"
+                                                class="text-xs font-semibold px-2 py-0.5 rounded ${(p.lastMode || 'prorated') === 'deduction' ? 'bg-blue-100 text-blue-700' : 'text-gray-400 hover:text-gray-600 hover:bg-gray-100'}">차감액 입력</button>
+                                        </div>
+                                        <div class="relative ${(p.lastMode || 'prorated') !== 'deduction' ? '' : 'hidden'}" id="lastBaseField-${idx}">
                                             <input type="text" id="lastBase-${idx}" value="${p.lastBase ? Number(p.lastBase).toLocaleString() : ''}"
                                                 oninput="formatNumber(this); syncField(${idx}, 'lastBase', parseNum(this.value)); calculatePerson(${idx})"
                                                 class="w-full border border-gray-300 rounded-lg px-3 py-2 text-right focus:ring-2 focus:ring-blue-500 focus:outline-none pr-8" placeholder="0">
                                             <span class="absolute right-3 top-2.5 text-gray-500 text-sm">원</span>
                                         </div>
+                                        <div class="relative ${(p.lastMode || 'prorated') === 'deduction' ? '' : 'hidden'}" id="lastDeductionField-${idx}">
+                                            <input type="text" id="lastDeduction-${idx}" value="${p.lastDeduction ? Number(p.lastDeduction).toLocaleString() : ''}"
+                                                oninput="formatNumber(this); syncField(${idx}, 'lastDeduction', parseNum(this.value)); calculatePerson(${idx})"
+                                                class="w-full border border-gray-300 rounded-lg px-3 py-2 text-right focus:ring-2 focus:ring-blue-500 focus:outline-none pr-8" placeholder="0">
+                                            <span class="absolute right-3 top-2.5 text-gray-500 text-sm">원</span>
+                                        </div>
+                                        <p class="text-xs text-gray-400 mt-1" id="lastModeHint-${idx}">${(p.lastMode || 'prorated') !== 'deduction' ? '월 급여 전체 → 일할 계산' : '총합계에서 차감할 금액'}</p>
                                     </div>
                                 </div>
                             </div>
@@ -413,7 +461,9 @@
             el(`resName-${idx}`).innerText = p.empName || '-';
             el(`resId-${idx}`).innerText = p.empId || '-';
 
-            const middleSum = p.totalBase - p.firstBase - p.lastBase;
+            const firstMode = p.firstMode || 'prorated';
+            const lastMode = p.lastMode || 'prorated';
+
             let proratedFirst = 0, proratedLast = 0;
             let startTotal = 0, startWorked = 0, endTotal = 0, endWorked = 0;
 
@@ -429,6 +479,26 @@
                 proratedLast = (p.lastBase / endTotal) * endWorked;
             }
 
+            // 첫 달: 일할 계산이면 월 급여 전체를 빼고 안분액을 더함, 차감액이면 차감액만 뺌
+            let firstSubtract = 0, firstContrib = 0;
+            if (firstMode === 'prorated') {
+                firstSubtract = p.firstBase || 0;
+                firstContrib = proratedFirst;
+            } else {
+                firstSubtract = p.firstDeduction || 0;
+                firstContrib = 0;
+            }
+
+            // 마지막 달: 동일 분기
+            let lastSubtract = 0, lastContrib = 0;
+            if (lastMode === 'prorated') {
+                lastSubtract = p.lastBase || 0;
+                lastContrib = proratedLast;
+            } else {
+                lastSubtract = p.lastDeduction || 0;
+                lastContrib = 0;
+            }
+
             let includedExtra = 0, includedCount = 0;
             p.extraPays.forEach(item => {
                 if (item.included) {
@@ -442,11 +512,15 @@
             const lines = [];
             if (p.startDate && p.endDate) {
                 lines.push(`<div>· 중간 기간 급여: 전액 반영</div>`);
-                if (p.firstBase > 0) {
+                if (firstMode === 'prorated' && (p.firstBase || 0) > 0) {
                     lines.push(`<div>· 첫 달: ${startTotal}일 중 <b class="text-gray-200">${startWorked}일</b> 일할 → <b class="text-gray-200">${Math.round(proratedFirst).toLocaleString()}원</b></div>`);
+                } else if (firstMode === 'deduction' && firstSubtract > 0) {
+                    lines.push(`<div>· 첫 달: 총합계에서 <b class="text-gray-200">${firstSubtract.toLocaleString()}원</b> 차감</div>`);
                 }
-                if (p.lastBase > 0) {
+                if (lastMode === 'prorated' && (p.lastBase || 0) > 0) {
                     lines.push(`<div>· 마지막 달: ${endTotal}일 중 <b class="text-gray-200">${endWorked}일</b> 일할 → <b class="text-gray-200">${Math.round(proratedLast).toLocaleString()}원</b></div>`);
+                } else if (lastMode === 'deduction' && lastSubtract > 0) {
+                    lines.push(`<div>· 마지막 달: 총합계에서 <b class="text-gray-200">${lastSubtract.toLocaleString()}원</b> 차감</div>`);
                 }
             } else {
                 lines.push(`<div>· 급여지급액 총합계 기반 산출</div>`);
@@ -458,7 +532,7 @@
             }
             const explanation = lines.join('');
 
-            const finalWage = proratedFirst + middleSum + proratedLast + includedExtra;
+            const finalWage = p.totalBase - firstSubtract + firstContrib - lastSubtract + lastContrib + includedExtra;
             p.totalWage = Math.round(finalWage);
             const grossSeverance = Math.round(finalWage / 12);
             const netSeverance = grossSeverance - prevPaid;
